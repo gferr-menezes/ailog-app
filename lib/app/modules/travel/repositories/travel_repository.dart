@@ -1,3 +1,5 @@
+import 'package:ailog_app_carga_mobile/app/modules/travel/models/toll_model.dart';
+
 import '../models/travel_model.dart';
 
 abstract class TravelRepository {
@@ -7,4 +9,6 @@ abstract class TravelRepository {
   Future<TravelModel?> getTravelInDB({String? plate, int? id});
   Future<List<TravelModel>?> getTravels({String? plate, int? id});
   Future<void> updateTravel(TravelModel travel);
+  Future<List<TollModel>> getTolls(TravelModel travel);
+  Future<void> updateToll(TollModel toll);
 }

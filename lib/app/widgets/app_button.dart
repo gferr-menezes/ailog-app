@@ -32,7 +32,7 @@ class _AppButtonState extends State<AppButton> {
       child: ElevatedButton(
         onPressed: widget.onPressed,
         style: ElevatedButton.styleFrom(
-          shape: const StadiumBorder(),
+          //shape: const StadiumBorder(),
           backgroundColor: widget.color,
         ),
         child: widget.loading == true

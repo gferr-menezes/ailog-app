@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:ailog_app_carga_mobile/app/modules/travel/models/travel_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -77,7 +75,7 @@ class ListTravel extends StatelessWidget {
                             height: 50,
                             //  color: context.theme.primaryColor,
                             child: const Center(
-                              child: Text('VIAGEM 1', style: TextStyle(fontSize: 18.0)),
+                              child: Text('VIAGEM', style: TextStyle(fontSize: 18.0)),
                             ),
                           ),
                           Padding(
@@ -151,7 +149,7 @@ class ListTravel extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.all(7.0),
                                   child: Text(
-                                    '${travels[index].tolls?.length ?? 0} QTD',
+                                    '${travels[index].tolls?.length ?? 0}',
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                                   ),
                                 ),
@@ -172,7 +170,7 @@ class ListTravel extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.all(7.0),
                                   child: Text(
-                                    travels[index].status,
+                                    controller.getStatusTravel(travels[index].status),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 17,
@@ -209,7 +207,7 @@ class ListTravel extends StatelessWidget {
                                     controller.updateTravel(travelSelected);
                                   },
                                   child: const Padding(
-                                    padding: EdgeInsets.all(7.0),
+                                    padding: EdgeInsets.only(left: 1),
                                     child: Text(
                                       'Finalizar viagem',
                                       style: TextStyle(fontSize: 18.0, color: Colors.green),

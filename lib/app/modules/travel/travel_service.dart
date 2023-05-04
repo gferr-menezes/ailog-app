@@ -1,15 +1,17 @@
-import 'dart:developer';
-
-import 'package:ailog_app_carga_mobile/app/modules/travel/models/travel_model.dart';
-
+import 'models/geolocation_model.dart';
+import 'models/travel_model.dart';
+import 'repositories/geolocation_repository.dart';
 import 'repositories/travel_repository.dart';
 
 class TravelService {
   final TravelRepository _travelRepository;
+  final GeolocationRepository _geolocationRepository;
 
   TravelService({
     required TravelRepository travelRepository,
-  }) : _travelRepository = travelRepository;
+    required GeolocationRepository geolocationRepository,
+  })  : _travelRepository = travelRepository,
+        _geolocationRepository = geolocationRepository;
 
   Future<List<TravelModel>> checkTravel(String plate) async {
     var travels = await _travelRepository.checkTravel(plate);
@@ -36,5 +38,63 @@ class TravelService {
 
   Future<void> updateTravel(TravelModel travel) async {
     await _travelRepository.updateTravel(travel);
+  }
+
+  Future<void> sendLocation({required double latitude, required double longitude, required int id}) async {
+    TravelModel? travel = await getTravelInDB(id: id);
+
+    GeolocationModel geolocation = GeolocationModel(
+      latitude: latitude,
+      longitude: longitude,
+      collectionDate: DateTime.now(),
+      statusSend: StatusSend.pending.name.toLowerCase(),
+      travelId: travel!.travelIdAPI,
+    );
+
+    try {
+      if (travel.status == TravelStatus.finished.name.toLowerCase()) {
+        return;
+      }
+
+      await _geolocationRepository.sendPosition(geolocation, travel.plate);
+      geolocation.statusSend = StatusSend.sended.name.toLowerCase();
+      await _geolocationRepository.savePosition(geolocation);
+    } catch (e) {
+      if (travel.status == TravelStatus.finished.name.toLowerCase()) {
+        return;
+      }
+
+      await _geolocationRepository.savePosition(geolocation);
+
+      throw Exception(e);
+    }
+  }
+
+  Future<void> sendLocationsPending() async {
+    List<GeolocationModel>? geolocations =
+        await _geolocationRepository.getGeolocations(statusSend: StatusSend.pending.name.toLowerCase());
+
+    if (geolocations == null) {
+      return;
+    }
+
+    for (var geolocation in geolocations) {
+      TravelModel? travel = await getTravelInDB(id: geolocation.travelId);
+      if (travel != null) {
+        await _geolocationRepository.sendPosition(geolocation, travel.plate);
+        geolocation.statusSend = StatusSend.sended.name.toLowerCase();
+        await _geolocationRepository.update(geolocation);
+      }
+    }
+  }
+
+  Future<void> getTolls(TravelModel travel) async {
+    final tolls = await _travelRepository.getTolls(travel);
+
+    if (tolls.isNotEmpty) {
+      for (var toll in tolls) {
+        await _travelRepository.updateToll(toll);
+      }
+    }
   }
 }

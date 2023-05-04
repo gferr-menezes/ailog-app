@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:ailog_app_carga_mobile/app/modules/travel/models/travel_model.dart';
 import 'package:ailog_app_carga_mobile/app/modules/travel/travel_service.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
+import '../../commom/geolocation.dart';
 import '../../commom/loader_mixin.dart';
 import '../../commom/message_mixin.dart';
 
@@ -19,6 +23,7 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
   var travels = <TravelModel>[].obs;
   final loadingTravels = false.obs;
   final _travelInProgress = false.obs;
+  final _appIsOnline = false.obs;
   List<TravelModel> travelsForSelectedForStart = <TravelModel>[].obs;
 
   @override
@@ -74,10 +79,12 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
     }
   }
 
-  Future<List<TravelModel>?> getTravels({String? plate, int? id}) async {
+  Future<List<TravelModel>?> getTravels({String? plate, int? id, bool? showLoading = true}) async {
     try {
-      loadingTravels.value = true;
+      loadingTravels.value = showLoading!;
+      travels.clear();
       var travelsData = await _travelService.getTravels();
+
       hideLoading();
       if (travelsData != null) {
         for (var travel in travelsData) {
@@ -97,9 +104,9 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
 
   Future<void> updateTravel(TravelModel travel) async {
     try {
-      loading.value = true;
+      //loading.value = true;
       await _travelService.updateTravel(travel);
-      loading.toggle();
+      //loading.toggle();
       travels.clear();
       travelInProgress = false;
       message(
@@ -110,7 +117,7 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
         ),
       );
     } catch (e) {
-      loading.toggle();
+      //loading.toggle();
       message(
         MessageModel(
           message: 'Erro ao finalizar a viagem',
@@ -122,9 +129,57 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
     }
   }
 
-  bool get travelInProgress => _travelInProgress.value;
+  Future<Position?> getLatLong() async {
+    return await Geolocation.getCurrentPosition();
+  }
 
+  Future<void> sendLocation() async {
+    Position? position = await getLatLong();
+    int? travelId;
+
+    /**
+     * filter travels in progress
+     */
+    var travelData = travels.where((element) => element.status == TravelStatus.inProgress.name.toLowerCase()).toList();
+
+    if (travelData.isNotEmpty) {
+      travelId = travelData.first.travelIdAPI;
+    }
+
+    if (travelId == null || position == null) {
+      await _travelService.sendLocationsPending();
+      return;
+    }
+
+    await _travelService.sendLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      id: travelData.first.id!,
+    );
+
+    _travelService.getTolls(travelData.first).then((value) {
+      travels.clear();
+      getTravels(showLoading: false);
+    });
+
+    await _travelService.sendLocationsPending();
+  }
+
+  String getStatusTravel(String status) {
+    if (status.toLowerCase() == TravelStatus.inProgress.name.toLowerCase()) {
+      return 'Em andamento';
+    } else if (status.toLowerCase() == TravelStatus.finished.name.toLowerCase()) {
+      return 'Finalizada';
+    } else {
+      return 'Desconhecido';
+    }
+  }
+
+  bool get travelInProgress => _travelInProgress.value;
   set travelInProgress(bool value) => _travelInProgress.value = value;
+
+  bool get appIsOnline => _appIsOnline.value;
+  set appIsOnline(bool value) => _appIsOnline.value = value;
 
   void hideLoading() {
     Future.delayed(const Duration(seconds: 1), () {

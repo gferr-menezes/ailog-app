@@ -1,11 +1,17 @@
-import 'package:ailog_app_carga_mobile/app/modules/travel/pages/list_travel.dart';
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:validatorless/validatorless.dart';
 
+import '../../../commom/geolocation.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_form_field.dart';
 import '../travel_controller.dart';
+import 'list_travel.dart';
+import 'toll_list_page.dart';
 
 class TravelPage extends StatefulWidget {
   const TravelPage({Key? key}) : super(key: key);
@@ -14,26 +20,75 @@ class TravelPage extends StatefulWidget {
   State<TravelPage> createState() => _TravelPageState();
 }
 
-class _TravelPageState extends State<TravelPage> {
+class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
 
     /**
+     * check connection
+     */
+    (Connectivity().checkConnectivity()).then((value) {
+      if (value.name != 'none') {
+        controller.appIsOnline = true;
+      } else {
+        controller.appIsOnline = false;
+      }
+    });
+
+    /**
+     * listener connection
+     */
+    subscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result.name != 'none') {
+        controller.appIsOnline = true;
+      } else {
+        controller.appIsOnline = false;
+      }
+    });
+
+    /**
      * check travel is started
      */
     controller.getTravels();
+    WidgetsBinding.instance.addObserver(this);
+    controller.sendLocation();
+
+    /**
+     * init send position
+     */
+    Timer.periodic(const Duration(seconds: 30), (timer) {
+      controller.sendLocation();
+    });
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    subscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      _positionStreamSubscription?.cancel();
+    } else if (state == AppLifecycleState.paused) {
+      _positionStreamSubscription = await Geolocation.callPositionStream();
+    }
+  }
+
+  late StreamSubscription<ConnectivityResult> subscription;
   var controller = Get.find<TravelController>();
   final formKey = GlobalKey<FormState>();
   final plateEC = TextEditingController();
+  StreamSubscription<Position>? _positionStreamSubscription;
 
   int? selectedTravel;
 
   @override
   Widget build(BuildContext context) {
-    plateEC.text = 'DOO-8946';
+    ///plateEC.text = 'DOO-8946';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -177,15 +232,18 @@ class _TravelPageState extends State<TravelPage> {
                   ),
                 ),
               ),
-
-              // const Padding(
-              //   padding: EdgeInsets.fromLTRB(5, 10, 5, 0),
-              //   child: TollListPage(percent: 0.62),
-              // )
-              SizedBox(
-                height: context.height * 0.67,
-                child: const ListTravel(),
-              )
+              const SizedBox(
+                height: 300,
+                child: ListTravel(),
+              ),
+              Obx(
+                () => controller.travels.isEmpty
+                    ? const SizedBox()
+                    : SizedBox(
+                        height: context.height * 0.67,
+                        child: const TollListPage(percent: 0.33),
+                      ),
+              ),
             ],
           ),
         ),

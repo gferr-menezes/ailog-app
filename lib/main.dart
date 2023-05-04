@@ -1,13 +1,20 @@
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'app/commom/application_bind.dart';
+import 'app/commom/geolocation.dart';
 import 'app/database/database_sqlite.dart';
 import 'app/routes/home_routes.dart';
 import 'app/commom/app_ui.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(DevicePreview(
+    enabled: !kReleaseMode,
+    builder: (context) => const MyApp(),
+  ));
+  //runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -22,6 +29,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     DatabaseSQLite().openConnection();
+    /** 
+     * Geolocation
+     */
+    Geolocation.requestPermission();
   }
 
   @override
@@ -31,6 +42,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: AppUI.theme,
       title: 'Ailog APP Carga',
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       getPages: [
         ...HomeRoutes.routes,
       ],

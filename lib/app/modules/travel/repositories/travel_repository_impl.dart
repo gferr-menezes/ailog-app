@@ -307,4 +307,71 @@ class TravelRepositoryImpl implements TravelRepository {
       throw Exception('Erro ao atualizar viagem');
     }
   }
+
+  @override
+  Future<List<TollModel>> getTolls(TravelModel travel) async {
+    try {
+      var result = await _restClient.get('/viagem/getPedagios/${travel.travelIdAPI}');
+
+      var resultData = result.body;
+      final pedagios = resultData['pedagios'];
+      List<TollModel> tolls = [];
+
+      for (var toll in pedagios) {
+        String? date;
+        if (toll['dataHoraPassagem'] != null) {
+          List checkDate = toll['dataHoraPassagem'].split('/');
+          if (checkDate.length > 1) {
+            var inputFormat = DateFormat('dd/MM/yyyy HH:mm');
+            var date1 = inputFormat.parse(toll['dataHoraPassagem']);
+            var outputFormat = DateFormat('yyyy-MM-dd HH:mm');
+            var date2 = outputFormat.format(date1); // 2019-08-18
+            date = date2;
+          } else {
+            date = toll['dataHoraPassagem'];
+          }
+        }
+
+        tolls.add(
+          TollModel(
+            passingOrder: toll['ordemPassagem'],
+            tollCode: toll['codigoPedagio'],
+            concessionaire: toll['concessionaria'],
+            highway: toll['rodovia'],
+            passingDateTime: date == null ? null : DateTime.parse(date),
+            tollName: toll['nomePedagio'],
+            value: toll['valor'],
+            travelId: travel.id!,
+          ),
+        );
+      }
+
+      return tolls;
+    } catch (e) {
+      throw Exception('Erro ao buscar pedágios');
+    }
+  }
+
+  @override
+  Future<void> updateToll(TollModel toll) async {
+    final db = await DatabaseSQLite().openConnection();
+
+    /**
+     * update per travel id and pass order
+     */
+    await db.update(
+      'tolls',
+      {
+        'concessionaire': toll.concessionaire?.toLowerCase(),
+        'pass_order': toll.passingOrder,
+        'tolls_code': toll.tollCode,
+        'highway': toll.highway?.toLowerCase(),
+        'date_time_pasage': toll.passingDateTime?.toIso8601String(),
+        'tolls_name': toll.tollName?.toLowerCase(),
+        'value': toll.value,
+      },
+      where: 'travel_id = ? and pass_order = ?',
+      whereArgs: [toll.travelId, toll.passingOrder],
+    );
+  }
 }
