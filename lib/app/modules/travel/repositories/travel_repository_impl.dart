@@ -38,9 +38,16 @@ class TravelRepositoryImpl implements TravelRepository {
         final List<TravelModel> travels = [];
         List<TravelAddresses> addresses = [];
 
-        DateTime dateInitTravel = DateTime.now();
+        late DateTime dateInitTravel;
 
         for (var travelData in travelsData) {
+          if (travelData['dataHoraPrevisaoInicio'] != null) {
+            var inputFormat = DateFormat('dd/MM/yyyy HH:mm');
+            dateInitTravel = inputFormat.parse(travelData['dataHoraPrevisaoInicio']);
+          } else {
+            dateInitTravel = DateTime.now();
+          }
+
           final List tolls = [];
           final tollsData = travelData['pedagios'] as List;
           final addressesData = travelData['enderecos'] as List;
@@ -79,7 +86,7 @@ class TravelRepositoryImpl implements TravelRepository {
           var travel = TravelModel.fromJson({
             'placa': plate,
             'status': TravelStatus.inProgress.name,
-            'dateInitTravel': travelData['dateInitTravel'] ?? dateInitTravel,
+            'dateInitTravel': dateInitTravel,
             'valorTotal': travelData['valorTotal'],
             'emissor': travelData['emissor'],
             'idViagem': travelData['idViagem'],

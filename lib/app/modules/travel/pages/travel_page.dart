@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:validatorless/validatorless.dart';
 
 import '../../../commom/geolocation.dart';
@@ -88,7 +89,7 @@ class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    ///plateEC.text = 'DOO-8946';
+    plateEC.text = 'DOO-8946';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -172,6 +173,8 @@ class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
                                                                       child: ListView.builder(
                                                                         itemCount: travels.length,
                                                                         itemBuilder: (context, index) {
+                                                                          var travel = travels[index];
+                                                                          var dateInitTravel = travel.dateInitTravel;
                                                                           String cityOrigin =
                                                                               travels[index].addresses?[0].city ?? '';
                                                                           String cityDestiny = travels[index]
@@ -184,8 +187,21 @@ class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
                                                                           return RadioListTile(
                                                                             value: travels[index].travelIdAPI,
                                                                             groupValue: selectedTravel,
-                                                                            title: Text(
-                                                                                'Origem: ${cityOrigin.toUpperCase()}'),
+                                                                            title: Column(
+                                                                              crossAxisAlignment:
+                                                                                  CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                Text(
+                                                                                  'Data: ${DateFormat('dd/MM/yyyy HH:mm').format(dateInitTravel!)}',
+                                                                                ),
+                                                                                const Padding(
+                                                                                  padding: EdgeInsets.only(top: 5),
+                                                                                ),
+                                                                                Text(
+                                                                                  'Origem: ${cityOrigin.toUpperCase()}',
+                                                                                ),
+                                                                              ],
+                                                                            ),
                                                                             subtitle: Text(
                                                                                 'Destino: ${cityDestiny.toUpperCase()}'),
                                                                             onChanged: (val) {
