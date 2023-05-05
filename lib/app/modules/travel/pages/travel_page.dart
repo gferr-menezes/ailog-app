@@ -11,8 +11,8 @@ import '../../../commom/geolocation.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_form_field.dart';
 import '../travel_controller.dart';
-import 'list_travel.dart';
-import 'toll_list_page.dart';
+import '../widgets/list_travel.dart';
+import '../widgets/toll_list_page.dart';
 
 class TravelPage extends StatefulWidget {
   const TravelPage({Key? key}) : super(key: key);
@@ -58,7 +58,7 @@ class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
     /**
      * init send position
      */
-    Timer.periodic(const Duration(seconds: 30), (timer) {
+    Timer.periodic(const Duration(minutes: 3), (timer) {
       controller.sendLocation();
     });
   }

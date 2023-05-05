@@ -1,7 +1,7 @@
-import 'models/geolocation_model.dart';
-import 'models/travel_model.dart';
-import 'repositories/geolocation_repository.dart';
-import 'repositories/travel_repository.dart';
+import '../models/geolocation_model.dart';
+import '../models/travel_model.dart';
+import '../repositories/geolocation_repository.dart';
+import '../repositories/travel_repository.dart';
 
 class TravelService {
   final TravelRepository _travelRepository;

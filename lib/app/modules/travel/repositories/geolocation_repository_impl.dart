@@ -78,7 +78,7 @@ class GeolocationRepositoryImpl implements GeolocationRepository {
   }
 
   @override
-  Future<List<GeolocationModel>>? getGeolocations({String? plate, int? id, String? statusSend}) async {
+  Future<List<GeolocationModel>>? getGeolocations({String? plate, int? id, String? statusSend, int? travelId}) async {
     final db = await DatabaseSQLite().openConnection();
 
     var where = '';
@@ -97,6 +97,11 @@ class GeolocationRepositoryImpl implements GeolocationRepository {
     if (statusSend != null) {
       where = 'status_send = ?';
       whereArgs = [statusSend.toLowerCase()];
+    }
+
+    if (travelId != null) {
+      where = 'travel_id = ?';
+      whereArgs = [travelId];
     }
 
     var results = await db.query('geolocation', where: where, whereArgs: whereArgs);

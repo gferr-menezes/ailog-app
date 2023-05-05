@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:ailog_app_carga_mobile/app/modules/travel/models/travel_model.dart';
-import 'package:ailog_app_carga_mobile/app/modules/travel/travel_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
 import '../../commom/geolocation.dart';
 import '../../commom/loader_mixin.dart';
 import '../../commom/message_mixin.dart';
+import 'models/travel_model.dart';
+import 'services/travel_service.dart';
 
 class TravelController extends GetxController with LoaderMixin, MessageMixin {
   final TravelService _travelService;
@@ -21,10 +21,11 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
   final loading = false.obs;
   final message = Rxn<MessageModel>();
   var travels = <TravelModel>[].obs;
-  final loadingTravels = false.obs;
+  final loadingTravels = true.obs;
   final _travelInProgress = false.obs;
   final _appIsOnline = false.obs;
   List<TravelModel> travelsForSelectedForStart = <TravelModel>[].obs;
+  final _idTravelSelected = 0.obs;
 
   @override
   void onInit() {
@@ -32,6 +33,14 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
     loaderListener(loading);
     messageListener(message);
   }
+
+  bool get travelInProgress => _travelInProgress.value;
+  set travelInProgress(bool value) => _travelInProgress.value = value;
+
+  bool get appIsOnline => _appIsOnline.value;
+  set appIsOnline(bool value) => _appIsOnline.value = value;
+
+  int get idTravelSelected => _idTravelSelected.value;
 
   Future<void> startTravel(String plate, {int? idTravelSelected}) async {
     try {
@@ -81,9 +90,12 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
 
   Future<List<TravelModel>?> getTravels({String? plate, int? id, bool? showLoading = true}) async {
     try {
-      loadingTravels.value = showLoading!;
-      travels.clear();
+      Future.delayed(const Duration(milliseconds: 1), () {
+        loadingTravels.value = showLoading!;
+      });
+
       var travelsData = await _travelService.getTravels();
+      travels.clear();
 
       hideLoading();
       if (travelsData != null) {
@@ -93,6 +105,11 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
             travels.add(travel);
           }
         }
+
+        if (travelsData.isNotEmpty) {
+          _idTravelSelected.value = travelsData.first.travelIdAPI;
+        }
+
         return travelsData;
       }
       return null;
@@ -174,12 +191,6 @@ class TravelController extends GetxController with LoaderMixin, MessageMixin {
       return 'Desconhecido';
     }
   }
-
-  bool get travelInProgress => _travelInProgress.value;
-  set travelInProgress(bool value) => _travelInProgress.value = value;
-
-  bool get appIsOnline => _appIsOnline.value;
-  set appIsOnline(bool value) => _appIsOnline.value = value;
 
   void hideLoading() {
     Future.delayed(const Duration(seconds: 1), () {

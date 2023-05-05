@@ -1,6 +1,6 @@
-import 'package:ailog_app_carga_mobile/app/widgets/app_custom_app_bar.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/app_custom_app_bar.dart';
 import './home_controller.dart';
 
 class HomePage extends GetView<HomeController> {
@@ -10,20 +10,26 @@ class HomePage extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppCustomAppBar(),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        currentIndex: controller.tabIndex,
-        onTap: (value) {},
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Lat-Long',
-          ),
-        ],
+      bottomNavigationBar: Obx(
+        () {
+          return BottomNavigationBar(
+            backgroundColor: Colors.white,
+            currentIndex: controller.tabIndex,
+            onTap: (value) {
+              controller.tabIndex = value;
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Início',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.map),
+                label: 'Lat-Long',
+              ),
+            ],
+          );
+        },
       ),
       body: Navigator(
         initialRoute: '/travel',
