@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 
 class RestClient extends GetConnect {
   //final _appBaseUrl = 'https://way-dev.webrouter.com.br/appTracking';
-  final _appBaseUrl = 'http://192.168.0.102:8095/tracking';
-  //final _appBaseUrl = 'http://192.168.0.87:8095/tracking';
+  //final _appBaseUrl = 'http://192.168.0.102:8095/tracking';
+  final _appBaseUrl = 'http://192.168.0.87:8095/tracking';
 
   RestClient() {
     httpClient.baseUrl = _appBaseUrl;

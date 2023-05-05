@@ -89,7 +89,7 @@ class _TravelPageState extends State<TravelPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    plateEC.text = 'DOO-8946';
+    // plateEC.text = 'DOO-8946';
 
     return Scaffold(
       backgroundColor: Colors.white,

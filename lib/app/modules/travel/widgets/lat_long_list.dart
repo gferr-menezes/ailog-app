@@ -39,25 +39,30 @@ class LatLongList extends StatelessWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              ListTile(
-                                leading: Icon(
-                                  Icons.location_on,
-                                  size: 50,
-                                  color: geoLocationData.statusSend == 'sended' ? Colors.green : Colors.grey,
+                              GestureDetector(
+                                onTap: () {
+                                  Get.toNamed('/travel/map', arguments: geoLocationData);
+                                },
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.location_on,
+                                    size: 50,
+                                    color: geoLocationData.statusSend == 'sended' ? Colors.green : Colors.grey,
+                                  ),
+                                  title: Text('Latitude: ${geoLocationData.latitude}'),
+                                  subtitle: Text('Longitude: ${geoLocationData.longitude}'),
+                                  trailing: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      const Text('Coletado em:'),
+                                      Text(
+                                        DateFormat('dd/MM/yyyy HH:mm').format(geoLocationData.collectionDate),
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                title: Text('Latitude: ${geoLocationData.latitude}'),
-                                subtitle: Text('Longitude: ${geoLocationData.longitude}'),
-                                trailing: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    const Text('Coletado em:'),
-                                    Text(
-                                      DateFormat('dd/MM/yyyy HH:mm').format(geoLocationData.collectionDate),
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              )
                             ],
                           ),
                         );
